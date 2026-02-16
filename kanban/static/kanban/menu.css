@@ -1,3 +1,4 @@
+/* Base colors for the navigation bar */
 :root{
 --base-clr: #11121a;
 --line-clr: #42434a;
@@ -8,15 +9,20 @@
 --secondary-text-clr: #b0b3c1;
 }
 
+
+/* Getting rid of all pre defined margin and paddings */
 *{
     margin: 0;
     padding: 0;
 }
 
+/* 1.5 line height just looks better*/
 html{
     line-height: 1.5;
 }
 
+
+/* Display as grid. First colum is the navigation bar that just take the minimal space as needed (auto)*/
 body{
     min-height: 100vh;
     min-height: 100dvh;
@@ -33,14 +39,18 @@ body{
     background-color: var(--base-clr);
     border-right: 1px solid var(--line-clr);
 
+    /* keep the navigation where it is. even when you can scroll the page*/
     position: sticky;
     top: 0;
     align-self: start;
     transition: 300ms ease-in-out;
-    overflow: hidden;
+    /* when the navigationbar shrinks this look better when this attributes are active*/
+    overflow-y: auto;
+    overflow-x: hidden;
     text-wrap: nowrap;
 }
 
+/* closed style of the navigation bar*/
 #sidebar.close{
     padding: 5px;
     width: 60px;
@@ -52,12 +62,17 @@ body{
     padding: 0;
 }
 
+/* margin and justify the list items in the ul*/
 #sidebar > ul > li:first-child{
     display: flex;
     justify-content: flex-end;
     margin-top: 16px;
+    .UserName{
+        font-weight: 600;
+    }
 }
 
+/* Color of font and svg when active*/
 #sidebar ul li.active a{
     color: var(--accent-clr);
 
@@ -66,7 +81,8 @@ body{
     }
 }
 
-#sidebar a, #sidebar .dropdown-btn{
+/* Design dropdown and a tags like the same*/
+#sidebar a, #sidebar .dropdown-btn, #sidebar .UserName{
     border-radius: .5em;
     padding: .85em;
     text-decoration: none;
@@ -76,6 +92,7 @@ body{
     gap: 1em
 }
 
+/* let the dropdown look like the other a tags */
 .dropdown-btn{
     width: 100%;
     text-align: left;
@@ -85,20 +102,25 @@ body{
 
 }
 
+/* svg style*/
 #sidebar svg{
     flex-shrink: 0;
     fill: var(--text-clr)
 }
 
+/* the spans taking the complete space an the drop downs svg only as much as needed */
 #sidebar a span, #sidebar .dropdown-btn span{
     flex-grow: 1;
 }
 
+/* hover effect*/
 #sidebar a:hover, #sidebar .dropdown-btn:hover{
     background-color: var(--hover-clr);
 
 }
 
+/* This is the must fun part. Make the sub menu a grid with 0fr like 0 height. When sub menu show you have animation when the row grows or shrink*/
+/* this does not work with height auto.*/
 #sidebar .sub-menu{
     display: grid;
     grid-template-rows: 0fr;
@@ -108,20 +130,26 @@ body{
     > div {
         overflow: hidden
     }
+
 }
 
+
+/* Grow the row with the sub menu*/
 #sidebar .sub-menu.show{
     grid-template-rows: 1fr;
 }
 
+/* rotate time*/
 .dropdown-btn svg{
     transition: 200ms;
 }
 
+/* rotate svg*/
 .rotate svg:last-child{
     rotate: -180deg;
 }
 
+/* toggle style to the shrink or grow the hole menu*/
 #toggle-btn{
     margin-left: auto;
     padding: 1em;
@@ -137,4 +165,41 @@ body{
 
 #toggle-btn:hover{
     background-color: var(--hover-clr);
+}
+
+
+
+/* Input inside sidebar submenu  */
+#sidebar .sub-menu > div > input {
+  width: 100%;
+  height: 34px;
+  padding: 0 0.75em;
+
+  border-radius: .5em;               
+  border: 1px solid var(--line-clr); 
+
+  background-color: var(--hover-clr); 
+  color: var(--text-clr);
+
+  font-size: 0.95rem;
+  outline: none;
+
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+
+#sidebar .sub-menu > div > input::placeholder {
+  color: var(--secondary-text-clr);
+  opacity: 1;
+}
+
+
+#sidebar .sub-menu > div > input:hover {
+  background-color: #1b1d2a; 
+}
+
+
+#sidebar .sub-menu > div > input:focus {
+  border-color: var(--accent-clr);
+  box-shadow: 0 0 0 3px rgba(94, 99, 255, 0.20);
 }

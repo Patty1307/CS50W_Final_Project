@@ -1,0 +1,18 @@
+.kanban {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding: 1rem;
+}
+
+.column {
+  flex: 0 0 320px;      /* feste Spaltenbreite */
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 120px); /* optional */
+}
+
+.column-body {
+  overflow-y: auto;     /* Tasks scrollen in der Spalte */
+  padding-right: .25rem;
+}
