@@ -99,16 +99,17 @@ def board_create(request):
                              "created": False
                              }, status=400)
     
-    # Try to create board
-    board, created = Board.objects.get_or_create(
-        owner=request.user,
-        name=board_name
-    )
+    board = Board.objects.create(
+    owner=request.user,
+    name=board_name
+)
+    
+
 
     # Give id back an if the board is really created
     return JsonResponse({
         "board_id": board.id,
-        "created": created,
+        "created": True,
     }, status=200)
 
 
