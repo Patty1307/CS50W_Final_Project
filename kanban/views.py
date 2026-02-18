@@ -1,16 +1,19 @@
 import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import JsonResponse
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST, require_GET, require_http_methods
 
 
-from .models import User, Board
+from .models import User, Board, Column
+
+DEFAULT_COLUMNS = ["To do", "Doing", "Done"]
+
 
 @login_required(login_url='login')
 def index(request):
@@ -99,19 +102,49 @@ def board_create(request):
                              "created": False
                              }, status=400)
     
-    board = Board.objects.create(
-    owner=request.user,
-    name=board_name
-)
-    
+    # Make the Database operation as one pakage
+    with transaction.atomic():
+        board = Board.objects.create(
+            owner=request.user,
+            name=board_name
+        )
 
+        # 3 Standard-Columns for each new table
+        Column.objects.bulk_create([
+            Column(board=board, name=name, position=i)
+            for i, name in enumerate(DEFAULT_COLUMNS)
+        ])
 
-    # Give id back an if the board is really created
     return JsonResponse({
-        "board_id": board.id,
         "created": True,
+        "board": {
+            "id": board.id,
+            "name": board.name
+        }
+    }, status=201)
+
+
+@csrf_protect
+@require_GET
+@login_required(login_url='login')
+def get_board(request, board_id):
+    
+    board = get_object_or_404(Board, id=board_id)
+
+    return JsonResponse({
+    "columns": [
+        {
+            "id": c.id,
+            "name": c.name,
+            "position": c.position
+        }
+        for c in board.columns.all()
+    ]
     }, status=200)
 
 
-def board(request, id):
+
+
+
+def board(reqeust):
     pass

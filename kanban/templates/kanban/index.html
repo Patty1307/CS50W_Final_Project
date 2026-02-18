@@ -3,71 +3,13 @@
 
 {% block body %}
 
-<div class="kanban">
+<div class="kanban" id="kanban-board">
 
-    <div class="kanban-column">
-        <div>
-            <h2 class="kanban-head">Flex Spalte 1</h2>
-        </div>
-
-        <div class="kanban-card-wrapper">
-            <div class="kanban-card">
-                <div class="kanan-card-body">
-                    dfgsdfgsdf
-                </div>
-            </div>
-            <div class="kanban-card"></div>
-            <div class="kanban-card"></div>
-            <div class="kanban-card"></div>
-            <div class="kanban-card"></div>
-            <div class="kanban-card"></div>
-            <div class="kanban-card"></div>
-            <div class="kanban-card"></div>
-        </div>
-    </div>
-
-    <div class="kanban-column">
-        <div>
-            <h2 class="kanban-head">Flex Spalte 2</h2>
-        </div>
-
-        <div class="kanban-card-wrapper">
-            <div class="kanban-card"></div>
-            <div class="kanban-card"></div>
-            <div class="kanban-card"></div>
-            <div class="kanban-card"></div>
-        </div>
-    </div>
-
-    <div class="kanban-column">
-        <div>
-            <h2 class="kanban-head">Flex Spalte 3</h2>
-        </div>
-
-        <div class="kanban-card-wrapper">
-            <div class="kanban-card"></div>
-            <div class="kanban-card"></div>
-            <div class="kanban-card"></div>
-            <div class="kanban-card"></div>
-        </div>
-    </div>
-
-    <div class="kanban-column">
-        <div>
-            <h2 class="kanban-head">Flex Spalte 4</h2>
-        </div>
-
-        <div class="kanban-card-wrapper">
-            <div class="kanban-card"></div>
-            <div class="kanban-card"></div>
-            <div class="kanban-card"></div>
-            <div class="kanban-card"></div>
-        </div>
-    </div>
 
 </div>
 
 {% endblock %}
 
 {% block script %}
+<script src="{% static 'kanban/board.js' %}" defer></script>
 {% endblock %}
