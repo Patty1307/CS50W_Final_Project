@@ -30,12 +30,14 @@ html, body {
   min-height: 0;         
 }
 
-.kanban .kanban-head {
+
+
+.kanban .kanban-head, .kanban-head-input{
   flex: 0 0 auto;         
   font-size: 20px;
   text-align: center;
   color: #fff;
-  margin: 10px;
+  
 }
 
 .kanban .kanban-card-wrapper {
@@ -59,10 +61,13 @@ html, body {
 
 }
 
-.kanban .kanan-card-body{
+.kanban .kanban-card-body{
   display: flex;
   width: 100%;
-  height: auto;
+  height: 90%;
   padding: 10px;
   color: var(--text-clr);
+  overflow: hidden;
 }
+
+

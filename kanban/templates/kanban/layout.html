@@ -37,7 +37,7 @@
                     <input type="text" placeholder="New Boardname" id="new-board" class="mb-2 mt-2">
                     <div id="Boardlist">
                         {% for board in menu_boards %}   
-                        <li><a href="{% url 'board' board.id %}">{{ board.name }}</a></li>
+                        <li><button class="openBoard-btn" data-board-id="{{ board.id }}">{{ board.name }}</button></li>
                         {% endfor %}
                     </div>
                 </div>

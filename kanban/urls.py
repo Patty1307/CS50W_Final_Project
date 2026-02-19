@@ -11,5 +11,5 @@ urlpatterns = [
 
  # API Routes
     path("board/create", views.board_create, name="board_create"),
-    path("board/<int:board_id>/get", views.get_board, name="get_board"),
+    path("board/get/<int:board_id>", views.get_board, name="get_board"),
 ]
