@@ -2,6 +2,7 @@ import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
+from django.db.models import Max
 from django.http import JsonResponse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
@@ -161,6 +162,38 @@ def rename_column(request, column_id):
 
     column.name = column_name
     column.save()
+
+    return JsonResponse({
+        "success": True,
+    })
+
+@csrf_protect
+@require_POST
+@login_required
+def create_column(request, board_id):
+    
+    board = get_object_or_404(Board, id=board_id)
+
+    # Try to parse the jsnon
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    
+    # Get the new column name
+    column_name = (data.get("newColumnName") or "").strip()
+    if not column_name:
+        return JsonResponse({"error": "Column name is required"}, status=400)
+
+    max_pos = board.columns.aggregate(m=Max("position"))["m"]
+    next_pos = 0 if max_pos is None else max_pos + 1
+
+    column = Column.objects.create(
+        board=board,
+        name=column_name,
+        position=next_pos
+    )
+
 
     return JsonResponse({
         "success": True,

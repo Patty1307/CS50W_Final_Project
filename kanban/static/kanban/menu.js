@@ -35,8 +35,6 @@ document.addEventListener('click', (e) => {
 
 
 
-
-
 function toggleSidebar() {
     sidebar.classList.toggle('close')
     Array.from(sidebar.getElementsByClassName('show')).forEach(ul => {

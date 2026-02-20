@@ -1,126 +1,93 @@
 
-async function createBoard(name){
-    console.log("Board", name);
+async function createBoard(name) {
+  console.log("Board", name);
 
-    try{
-       const csrfToken = getCSRFToken();
+  try {
+    const data = await api("/board/create", {
+      method: "POST",
+      body: { name }
+    });
 
-        //API-Call
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
 
-        const response = await fetch('/board/create',{
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
-            body: JSON.stringify({
-                name
-            })
-        });
+    btn.className = "openBoard-btn";
+    btn.textContent = data.board.name;      // oder name
+    btn.dataset.boardId = data.board.id;
 
-        // Json parsen
-        const data = await response.json();
+    li.appendChild(btn);
+    BoardList.prepend(li);
 
-        // Check Http status if everything is okay. Else Error handling
-        if (!response.ok) {
-            throw new Error(data.error || "Unknown error while creatint board");
-        }
-        console.log("Create Board API response:", data);
-
-        const li = document.createElement("li");
-        const btn = document.createElement("button");
-
-        btn.className = "openBoard-btn";
-        btn.textContent = name;
-        btn.dataset.boardId = data.board.id;
-
-        li.appendChild(btn);
-        BoardList.prepend(li);
-
-
-    } catch (error) {
-        console.error("Error creating board", error.message);
-    }
+  } catch (err) {
+    console.error("Error creating board:", err.message);
+  }
 }
+
 
 async function load_Board(board_id) {
 
-//clear the board completely
-const kanban = document.getElementById('kanban-board');
-kanban.innerHTML = "";
-kanban.dataset.boardId = board_id;
+  const kanban = document.getElementById('kanban-board');
+  kanban.innerHTML = "";
+  kanban.dataset.boardId = board_id;
 
-    try{
-       const csrfToken = getCSRFToken();
+  try {
+    const data = await api(`/board/get/${board_id}`, { method: "GET" });
 
-        //API-Call   
-        const response = await fetch(`/board/get/${board_id}`,{
-            method: 'GET',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            }
-        });
+    console.log("Load Board API response:", data);
 
-        // Json parsen
-        const data = await response.json();
+    const columns = data.columns;
 
-        // Check Http status if everything is okay. Else Error handling
-        if (!response.ok) {
-            throw new Error(data.error || "Unknown error while posting");
-        }
-        console.log("Load Board API response:", data);
+    columns.forEach(column => {
+      const div = document.createElement('div');
+      div.className = "kanban-column";
+      div.dataset.columnId = column.id;
 
-        const columns = data.columns;
+      const header = document.createElement('header');
+      header.className = "kanban-column-header";
 
-        columns.forEach(column => {
+      const titleInput = document.createElement('input');
+      titleInput.className = "kanban-head-input";
+      titleInput.value = column.name;
 
-            // Column container
-            const div = document.createElement('div');
-            div.className = "kanban-column";
-            div.dataset.columnId = column.id;
+      makeEditableTitle(titleInput, column.id);
 
-            // Header
-            const header = document.createElement('header');
-            header.className = "kanban-column-header";
+      header.appendChild(titleInput);
 
-            const h2 = document.createElement('input');
-            h2.className = "kanban-head-input";
-            h2.value = column.name;
+      const wrapper = document.createElement('div');
+      wrapper.className = "kanban-card-wrapper";
+      wrapper.dataset.dropzone = "cards";
 
-            makeEditableTitle(h2, column.id);
+      // Test cards
+      for (let i = 0; i < 6; i++) {
+        const card = document.createElement('div');
+        const card_body = document.createElement('div');
+        card_body.className = "kanban-card-body card-title";
+        card.className = "kanban-card";
+        card_body.innerHTML = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr,";
+        card.appendChild(card_body);
+        wrapper.appendChild(card);
+      }
 
-            header.appendChild(h2);
+      div.appendChild(header);
+      div.appendChild(wrapper);
+      kanban.appendChild(div);
+    });
 
-            // Card wrapper (Dropzone)
-            const wrapper = document.createElement('div');
-            wrapper.className = "kanban-card-wrapper";
-            wrapper.dataset.dropzone = "cards";
+    const newColumn = document.createElement('div');
+    newColumn.className = "kanban-new-column";
 
-for (let i = 0; i < 6; i++) {
-  const card = document.createElement('div');
-  const card_body = document.createElement('div');
-  card_body.className="kanban-card-body card-title";
-  card.className = "kanban-card";
-  card_body.innerHTML = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr,"
-  card.appendChild(card_body);
-  wrapper.appendChild(card);
-}
+    const newColumnInput = document.createElement('input');
+    newColumnInput.placeholder = "New Column";
+    newColumnInput.className = "kanban-new-column-input";
 
-            // build together
-            div.appendChild(header);
-            div.appendChild(wrapper);
+    newColumn.appendChild(newColumnInput);
+    kanban.appendChild(newColumn);
 
-            kanban.appendChild(div);
-        });
-    
+    AddColumnListener(newColumnInput, board_id);
 
-
-    } catch (error) {
-        console.error("Error loading board", error.message);
-    }
+  } catch (err) {
+    console.error("Error loading board:", err.message);
+  }
 }
 
 
@@ -148,36 +115,15 @@ function makeEditableTitle(inputEl, column_Id) {
     const newColumnName = inputEl.value.trim() || "Untitled";
     inputEl.value = newColumnName;
 
-    // API call to change the column name
-    try{
-       const csrfToken = getCSRFToken();
-
-        //API-Call
-
-        const response = await fetch(`/board/column/rename/${column_Id}`,{
-            method: 'PUT',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
-            body: JSON.stringify({
-                newColumnName
-            })
-        });
-
-        // Json parsen
-        const data = await response.json();
-
-        // Check Http status if everything is okay. Else Error handling
-        if (!response.ok) {
-            throw new Error(data.error || "Unknown error while rename column");
-        }
-        console.log("Rename column API response:", data);
-    } catch (error) {
-        console.error("Error rename column", error.message);
+    try {
+    await api(`/board/column/rename/${column_Id}`, {
+        method: "PUT",
+        body: { newColumnName }
+    });
+    } catch(err){
+    console.error("Rename failed:", err.message);
     }
-    };
+};
 
   inputEl.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
@@ -191,4 +137,83 @@ function makeEditableTitle(inputEl, column_Id) {
   });
 
   inputEl.addEventListener("blur", save);
+}
+
+function AddColumnListener(inputEl, board_id) {
+  inputEl.type = "text";
+  inputEl.spellcheck = false;
+  inputEl.autocomplete = "off";
+  inputEl.autocapitalize = "off";
+  inputEl.autocorrect = "off";
+
+
+    const savenewcolumn = async () => {
+    // API call to change the column name
+    const newColumnName = inputEl.value.trim()
+    try {
+    await api(`/board/column/create/${board_id}`, {
+        method: "Post",
+        body: { newColumnName }
+    });
+    } catch(err){
+    console.error("Rename failed:", err.message);
+    }
+    };
+
+  inputEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      inputEl.blur();      // triggert save with blur
+    }
+    if (e.key === "Escape") {
+      inputEl.value = ""; // revert
+    }
+  });
+
+  inputEl.addEventListener("blur", savenewcolumn);
+}
+
+
+// Generic helper for making API requests to the backend.
+// Handles JSON conversion, CSRF token, and error handling in one place.
+async function api(url, { method = "GET", body } = {}) {
+
+  // Default headers for JSON communication
+  const headers = { "Content-Type": "application/json" };
+
+  // Attach CSRF token if available (needed for Django POST/PUT/PATCH/DELETE)
+  const csrf = getCSRFToken();
+  if (csrf) headers["X-CSRFToken"] = csrf;
+
+  // Perform the HTTP request
+  const res = await fetch(url, {
+    method,                      
+    credentials: "same-origin",   
+    headers,
+    // Only attach body if provided, convert JS object -> JSON string
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  // Read response as plain text first.
+  // This avoids crashes when the server returns HTML instead of JSON (e.g. 404/500 pages).
+  const text = await res.text();
+
+  let data = null;
+
+  // Try to parse JSON safely (may fail if response is HTML or empty)
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    // If parsing fails, keep data as null
+  }
+
+  // If HTTP status is not OK (e.g. 400/404/500),
+  // throw a readable error message (from backend if available)
+  if (!res.ok) {
+    const msg = data?.error || `HTTP ${res.status} for ${url}`;
+    throw new Error(msg);
+  }
+
+  // Return parsed JSON data (or null if empty response)
+  return data;
 }
