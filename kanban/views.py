@@ -143,8 +143,25 @@ def get_board(request, board_id):
     }, status=200)
 
 
+@csrf_protect
+@require_http_methods(["PUT"])
+@login_required
+def rename_column(request, column_id):
+    
+    column = get_object_or_404(Column, id=column_id)
 
+    # Try to parse the jsnon
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    
+    # Get the new column name
+    column_name = data.get("newColumnName", "").strip()
 
+    column.name = column_name
+    column.save()
 
-def board(reqeust):
-    pass
+    return JsonResponse({
+        "success": True,
+    })

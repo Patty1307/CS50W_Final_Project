@@ -7,9 +7,10 @@ urlpatterns = [
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("register", views.register_view, name="register"),
-    path("board/<int:id>", views.board, name="board"),
+    
 
  # API Routes
     path("board/create", views.board_create, name="board_create"),
     path("board/get/<int:board_id>", views.get_board, name="get_board"),
+    path("board/column/rename/<int:column_id>", views.rename_column, name="rename_column"),
 ]

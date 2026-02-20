@@ -23,20 +23,36 @@ html, body {
 .kanban .kanban-column {
   display: flex;
   flex-direction: column; 
-  flex: 1 1 0;
+  flex: 0 1 1;
   padding: 0.5rem;
   background-color: rgba(255,255,255,0.06);
   border-radius: 16px;
-  min-height: 0;         
+  min-height: 0;
+  max-width: 300px;
+}
+
+.kanban .kanban-column-header{
+  height: 40px;
+  align-items: center;
+  padding: 15px;
+  justify-content: center;
 }
 
 
-
-.kanban .kanban-head, .kanban-head-input{
+.kanban .kanban-head-input{
   flex: 0 0 auto;         
   font-size: 20px;
   text-align: center;
   color: #fff;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  text-align: center;
+
+  padding: 0;
+  appearance: none;
   
 }
 
@@ -55,7 +71,6 @@ html, body {
   background-color: rgba(255,255,255,0.09);
   width: 100%;
   height: auto;           
-  min-height: 170px;       
   border-radius: 16px;
   border: 2px solid rgba(255,255,255,0.06);
 
@@ -64,7 +79,7 @@ html, body {
 .kanban .kanban-card-body{
   display: flex;
   width: 100%;
-  height: 90%;
+  height: 100%;
   padding: 10px;
   color: var(--text-clr);
   overflow: hidden;
