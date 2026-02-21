@@ -212,3 +212,11 @@ def delete_column(request, column_id):
     column.delete()
 
     return JsonResponse({"success": True})
+
+@csrf_protect
+@require_http_methods(["DELETE"])
+@login_required
+def delete_board(request, board_id):
+    board = get_object_or_404(Board, id=board_id)
+    board.delete()
+    return JsonResponse({"success": True})

@@ -21,10 +21,23 @@ const BoardList = document.getElementById("Boardlist")
         }
     });
 
-
 // Sidebar "active" state toggling for board buttons
 document.addEventListener("click", (e) => {
-  const btn = e.target.closest(".openBoard-btn");
+  
+ 
+  // DELETE BOARD  
+  const deleteBtn = e.target.closest(".deleteBoard-btn");
+  if (deleteBtn) {
+    const boardId = deleteBtn.dataset.boardId;
+    const li = e.target.closest("li");
+    if (boardId) deleteBoard(boardId, li);
+     console.log("Test")
+    return;   // verhindert openBoard
+  }
+  
+    
+  // OPEN BOARD
+    const btn = e.target.closest(".openBoard-btn");
   if (!btn) return;
 
   // 1) remove active from ALL sidebar items (or restrict to Boardlist, see below)
@@ -38,8 +51,6 @@ document.addEventListener("click", (e) => {
   const boardId = btn.dataset.boardId;
   if (boardId) load_Board(boardId);
 });
-
-
 
 
 function toggleSidebar() {

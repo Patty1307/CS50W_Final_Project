@@ -86,7 +86,7 @@ body{
 }
 
 /* Design dropdown and button like the same*/
-#sidebar a, #sidebar .dropdown-btn,#sidebar .openBoard-btn, #sidebar .UserName{
+#sidebar a, #sidebar .dropdown-btn, #sidebar .UserName{
     border-radius: .5em;
     padding: .85em;
     text-decoration: none;
@@ -97,7 +97,7 @@ body{
 }
 
 /* let the dropdown look like the other a tags */
-.dropdown-btn, .openBoard-btn{
+.dropdown-btn{
     width: 100%;
     text-align: left;
     background: none;
@@ -119,7 +119,7 @@ body{
 }
 
 /* hover effect*/
-#sidebar a:hover, #sidebar .dropdown-btn:hover, #sidebar .openBoard-btn:hover{
+#sidebar a:hover, #sidebar .dropdown-btn:hover, .board-list:hover{
     background-color: var(--hover-clr);
 
 }
@@ -208,3 +208,43 @@ body{
   border-color: var(--accent-clr);
   box-shadow: 0 0 0 3px rgba(94, 99, 255, 0.20);
 }
+
+
+.board-list {
+    display: flex;
+    border-radius: .5em;
+
+}
+
+.openBoard-btn {
+    padding: .85em;
+    text-decoration: none;
+    color: var(--text-clr);
+    align-items: center;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+  
+}
+
+.deleteBoard-btn {
+    padding: .45em;
+    text-decoration: none;
+    color: var(--text-clr);
+    align-items: center;
+    background: none;
+    border: none;
+    justify-content: flex-end;
+    flex-shrink: 1;
+    z-index: 1000;
+}
+
+.deleteBoard-btn svg {
+  fill: var(--text-clr) !important;
+}
+.deleteBoard-btn:hover svg { fill: #ff4d4f !important; }
