@@ -22,14 +22,21 @@ const BoardList = document.getElementById("Boardlist")
     });
 
 
-// eventlistener for sub menu to open the Board
-document.addEventListener('click', (e) => {
-
-  const btn = e.target.closest('.openBoard-btn');
+// Sidebar "active" state toggling for board buttons
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".openBoard-btn");
   if (!btn) return;
 
-  load_Board(btn.dataset.boardId);
+  // 1) remove active from ALL sidebar items (or restrict to Boardlist, see below)
+  document.querySelectorAll("#sidebar li.active").forEach(li => li.classList.remove("active"));
 
+  // 2) set active on the clicked item's <li>
+  const li = btn.closest("li");
+  if (li) li.classList.add("active");
+
+  // 3) load the board (data-board-id -> dataset.boardId)
+  const boardId = btn.dataset.boardId;
+  if (boardId) load_Board(boardId);
 });
 
 

@@ -76,7 +76,8 @@ body{
 }
 
 /* Color of font and svg when active*/
-#sidebar ul li.active a{
+#sidebar ul li.active a,
+#sidebar ul li.active button {
     color: var(--accent-clr);
 
     svg{

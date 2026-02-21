@@ -197,4 +197,18 @@ def create_column(request, board_id):
 
     return JsonResponse({
         "success": True,
+        "id": column.id,
+        "name": column.name
     })
+
+
+@csrf_protect
+@require_http_methods(["DELETE"])
+@login_required
+def delete_column(request, column_id):
+
+    column = get_object_or_404(Column, id=column_id)
+
+    column.delete()
+
+    return JsonResponse({"success": True})

@@ -13,5 +13,6 @@ urlpatterns = [
     path("board/create", views.board_create, name="board_create"),
     path("board/get/<int:board_id>", views.get_board, name="get_board"),
     path("board/column/rename/<int:column_id>", views.rename_column, name="rename_column"),
-    path("board/column/create/<int:board_id>", views.create_column, name="create_column")
+    path("board/column/create/<int:board_id>", views.create_column, name="create_column"),
+    path("board/column/delete/<int:column_id>", views.delete_column, name="delete_column")
 ]
