@@ -11,7 +11,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST, require_GET, require_http_methods
 
 
-from .models import User, Board, Column
+from .models import User, Board, Column, Card
 
 DEFAULT_COLUMNS = ["To do", "Doing", "Done"]
 
@@ -125,20 +125,21 @@ def board_create(request):
     }, status=201)
 
 
-@csrf_protect
+
 @require_GET
 @login_required(login_url='login')
 def get_board(request, board_id):
     
-    board = get_object_or_404(Board, id=board_id)
+    board = get_object_or_404(Board, id=board_id, owner=request.user)
 
     return JsonResponse({
     "columns": [
         {
             "id": c.id,
             "name": c.name,
-            "position": c.position
-        }
+            "position": c.position,
+                "cards": [card.serialize() for card in c.cards.all()],
+            }
         for c in board.columns.all()
     ]
     }, status=200)
@@ -149,7 +150,7 @@ def get_board(request, board_id):
 @login_required
 def rename_column(request, column_id):
     
-    column = get_object_or_404(Column, id=column_id)
+    column = get_object_or_404(Column, id=column_id, board__owner=request.user)
 
     # Try to parse the jsnon
     try:
@@ -172,7 +173,7 @@ def rename_column(request, column_id):
 @login_required
 def create_column(request, board_id):
     
-    board = get_object_or_404(Board, id=board_id)
+    board = get_object_or_404(Board, id=board_id, owner=request.user)
 
     # Try to parse the jsnon
     try:
@@ -207,7 +208,7 @@ def create_column(request, board_id):
 @login_required
 def delete_column(request, column_id):
 
-    column = get_object_or_404(Column, id=column_id)
+    column = get_object_or_404(Column, id=column_id, board__owner=request.user)
 
     column.delete()
 
@@ -217,6 +218,39 @@ def delete_column(request, column_id):
 @require_http_methods(["DELETE"])
 @login_required
 def delete_board(request, board_id):
-    board = get_object_or_404(Board, id=board_id)
+    board = get_object_or_404(Board, id=board_id, owner=request.user)
     board.delete()
     return JsonResponse({"success": True})
+
+
+@csrf_protect
+@require_POST
+@login_required
+def create_task(request, column_id):
+    
+    column = get_object_or_404(Column, id=column_id,  board__owner=request.user)
+
+    # Try to parse the jsnon
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    
+    # Get the task title
+    task_title = (data.get("newTaskName") or "").strip()
+    if not task_title:
+        return JsonResponse({"error": "Task title is required"}, status=400)
+
+    max_pos = column.cards.aggregate(m=Max("position"))["m"]
+    next_pos = 0 if max_pos is None else max_pos + 1
+
+    card = Card.objects.create(
+        column=column,
+        title=task_title,
+        position=next_pos
+    )
+
+    return JsonResponse({
+        "success": True,
+        "card": card.serialize()
+    }, status=201)

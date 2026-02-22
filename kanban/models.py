@@ -29,3 +29,40 @@ class Column(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['board', 'position'], name='uniq_column_position_per_board'),
         ]
+
+    def __str__(self):
+        return self.name
+
+class Card(models.Model):
+    
+    column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='cards')
+    title = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['-position']
+        constraints = [
+            models.UniqueConstraint(fields=['column', 'position'], name='uniq_card_position_per_column'),
+        ]
+
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "position": self.position,
+            "created": self.created.isoformat(),
+            "updated": self.updated.isoformat(),
+            "column_id": self.column_id,
+        }
+
+    @property
+    def board(self):
+        return self.column.board
+
+    def __str__(self):
+        return self.title

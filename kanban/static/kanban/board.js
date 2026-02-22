@@ -1,4 +1,6 @@
+let draggedCardEl = null;
 
+// Function for creating a new board
 async function createBoard(name) {
   try {
     const data = await api("/board/create", {
@@ -6,24 +8,28 @@ async function createBoard(name) {
       body: { name }
     });
 
+   //Build new list item with button for the new board
     console.log("New Board API:", data)
     const li = document.createElement("li");
 
-    const div = document.createElement("div");
-    div.className = "board-list"
+      const div = document.createElement("div");
+      div.className = "board-list"
 
-    const btn = document.createElement("button");
-    btn.className = "openBoard-btn";
-    btn.textContent = data.board.name;     
-    btn.dataset.boardId = data.board.id;
+      // Make the button with relevant data (Click event handled in menu.js)
+      const btn = document.createElement("button");
+      btn.className = "openBoard-btn";
+      btn.textContent = data.board.name;     
+      btn.dataset.boardId = data.board.id;
 
-    const deletebtn = document.createElement("button");
-    deletebtn.className = "deleteBoard-btn";
-    deletebtn.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="m376-300 104-104 104 104 56-56-104-104 104-104-56-56-104 104-104-104-56 56 104 104-104 104 56 56Zm-96 180q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520Zm-400 0v520-520Z"/></svg>
-    `  
-    deletebtn.dataset.boardId = data.board.id;
+      // create the delete button (Click event handled in menu.js)
+      const deletebtn = document.createElement("button");
+      deletebtn.className = "deleteBoard-btn";
+      deletebtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="m376-300 104-104 104 104 56-56-104-104 104-104-56-56-104 104-104-104-56 56 104 104-104 104 56 56Zm-96 180q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520Zm-400 0v520-520Z"/></svg>
+      `  
+      deletebtn.dataset.boardId = data.board.id;
 
+    //Build the elements together
     div.appendChild(btn)
     div.appendChild(deletebtn)
 
@@ -35,7 +41,7 @@ async function createBoard(name) {
   }
 }
 
-
+// Function to delete a Board
 async function deleteBoard(board_id, list_item) {
   try {
     const data = await api(`/board/delete/${board_id}`, {
@@ -44,6 +50,11 @@ async function deleteBoard(board_id, list_item) {
 
     console.log("Delete board API response", data)
     list_item.remove();
+    // Only clear the view if the deleted board is also the current active board
+    if (list_item.classList.contains("active")) {
+      document.querySelector('#kanban-board').innerHTML = ""
+    } 
+    
 
     } catch(err){
     console.error("Rename failed:", err.message);
@@ -51,9 +62,10 @@ async function deleteBoard(board_id, list_item) {
     };
 
 
-
+// Function to render/load the board
 async function load_Board(board_id) {
 
+  // Get the board/view from the board and make it empty in case there is already content
   const kanban = document.getElementById('kanban-board');
   kanban.innerHTML = "";
   kanban.dataset.boardId = board_id;
@@ -62,9 +74,7 @@ async function load_Board(board_id) {
     const data = await api(`/board/get/${board_id}`, { method: "GET" });
 
     console.log("Load Board API response:", data);
-
-    const columns = data.columns;
-
+    // Helper Function to render the kanban
     RenderKanban(kanban, data.columns, board_id);
 
   } catch (err) {
@@ -72,10 +82,13 @@ async function load_Board(board_id) {
   }
 }
 
+// Helper Function to get the csrf token
 function getCSRFToken() {
   return document.querySelector('meta[name="csrf-token"]').getAttribute("content");
 }
 
+
+// Helper function to make the Head of a column editable
 function makeEditableTitle(inputEl, column_Id) {
   inputEl.type = "text";
   inputEl.spellcheck = false;
@@ -125,6 +138,8 @@ function makeEditableTitle(inputEl, column_Id) {
   inputEl.addEventListener("blur", save);
 }
 
+
+// Add a new column
 function AddColumnListener(inputEl, board_id, inputColumn) {
   inputEl.type = "text";
   inputEl.spellcheck = false;
@@ -142,7 +157,7 @@ function AddColumnListener(inputEl, board_id, inputColumn) {
 
     try {
     const data = await api(`/board/column/create/${board_id}`, {
-        method: "Post",
+        method: "POST",
         body: { newColumnName }
     });
 
@@ -170,15 +185,89 @@ function AddColumnListener(inputEl, board_id, inputColumn) {
   inputEl.addEventListener("blur", savenewcolumn);
 }
 
+// Saves a new created Task in the Database and renders it into the wrapper
+function makenewTask(inputEl, column_Id){
 
+  inputEl.type = "text";
+  inputEl.spellcheck = false;
+  inputEl.autocomplete = "off";
+  inputEl.autocapitalize = "off";
+  inputEl.autocorrect = "off";
+
+
+    const savenewTask = async () => {
+    // API call to add a column
+    const newTaskName = inputEl.value.trim()
+
+    // Dont call api if column name ist empty. Worst case api handles empty value also
+    if (!newTaskName) return;
+
+    try {
+    const data = await api(`/board/create/task/${column_Id}`, {
+        method: "POST",
+        body: { newTaskName }
+    });
+
+    console.log("Create new Task API response", data) 
+    inputEl.value = ""
+    const cardEl = renderCard(data.card);
+
+      // Get the column
+      const columnEl = document.querySelector(`.kanban-column[data-column-id="${column_Id}"]`);
+      if (!columnEl) {
+        console.error("Column element not found for", column_Id);
+        return;
+      }
+
+      // Get the wrapper from the column
+      const wrapper = columnEl.querySelector(".kanban-card-wrapper");
+      if (!wrapper) {
+        console.error("Wrapper not found in column", column_Id);
+        return;
+      }
+
+    // Make the new taskj in the ui visible
+    wrapper.prepend(cardEl);
+
+
+
+
+    } catch(err){
+    console.error("Create task failed:", err.message);
+    }
+    };
+
+  inputEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      inputEl.blur();      // triggert save with blur
+    }
+    if (e.key === "Escape") {
+      inputEl.value = ""; // revert
+    }
+  });
+
+  inputEl.addEventListener("blur", savenewTask);
+
+
+
+}
+
+
+
+// Main function to rende the kanban
 function RenderKanban(kanban, columns, board_id) {
-      columns.forEach(column => {
-      div = renderColumn(column)
+      
+  
+    columns.forEach(column => {
+        // Helper function to generate the columns
+        div = renderColumn(column)
 
 
       kanban.appendChild(div);
     });
 
+    // Make an additional column for the Add Column field
     const newColumn = document.createElement('div');
     newColumn.className = "kanban-new-column";
 
@@ -227,32 +316,139 @@ function renderColumn(column) {
       
       makeEditableTitle(titleInput, column.id);
 
+      // Build Inputfield for new task
+      const input_new_card = document.createElement('input');
+      input_new_card.placeholder = "New Task";
+      input_new_card.className = "kanban-new-card-input"
+      makenewTask(input_new_card, column.id)
+
+      // Build header together
       header.appendChild(left);
       header.appendChild(titleInput);
       header.appendChild(right);
+      
 
-
+      // Build the wrapper
       const wrapper = document.createElement('div');
       wrapper.className = "kanban-card-wrapper";
       wrapper.dataset.dropzone = "cards";
+      wrapper.dataset.columnId = column.id;     
+      wireDropzone(wrapper);                   
 
+      // Build everthing together
       div.appendChild(header);
+      div.appendChild(input_new_card);
       div.appendChild(wrapper);
-
-
-      // Test cards
-      for (let i = 0; i < 6; i++) {
-        const card = document.createElement('div');
-        const card_body = document.createElement('div');
-        card_body.className = "kanban-card-body card-title";
-        card.className = "kanban-card";
-        card_body.innerHTML = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr,";
-        card.appendChild(card_body);
+      
+      // Create the cards if exist. When function is called for a new column. the exists no cards. Could either crash
+      (column.cards || []).forEach(cardData => {
+        card = renderCard(cardData)
         wrapper.appendChild(card);
-      }
+      });
 
+      // Return the created column
       return div
 }
+
+
+// Helper for rendering cards
+function renderCard(cardData) {
+
+  const card = document.createElement('div');
+  card.className = "kanban-card";
+  card.draggable = true;
+  card.dataset.cardId = cardData.id;
+  card.dataset.columnId = cardData.column_id;
+
+  const body = document.createElement('div');
+  body.className = "kanban-card-body card-title";
+  body.textContent = cardData.title ?? "(no title)";
+
+  card.appendChild(body);
+
+
+  wireCardDrag(card);
+
+  return card;
+}
+
+function wireCardDrag(cardEl) {
+  cardEl.addEventListener("dragstart", (e) => {
+    draggedCardEl = cardEl;
+    cardEl.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", cardEl.dataset.cardId);
+  });
+
+  cardEl.addEventListener("dragend", () => {
+    cardEl.classList.remove("dragging");
+    draggedCardEl = null;
+  });
+}
+
+
+// Function to make the wrappe to a dropzone
+function wireDropzone(wrapperEl) {
+  wrapperEl.addEventListener("dragover", (e) => {
+    e.preventDefault(); 
+    // Which card is currently dragged? Controlled  by the css class kanban-card.dragging
+    const dragging = document.querySelector(".kanban-card.dragging");
+    if (!dragging) return;
+
+    // Where i am hovering with the mouse an place it before the currently hovering element.
+    // When no hovering over a card then place it to the end of the lis
+    const afterEl = getDragAfterElement(wrapperEl, e.clientY);
+    if (afterEl == null) wrapperEl.appendChild(dragging);
+    else wrapperEl.insertBefore(dragging, afterEl);
+  });
+
+  wrapperEl.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const cardId = Number(e.dataTransfer.getData("text/plain"));
+    const toColumnId = Number(wrapperEl.dataset.columnId);
+
+    console.log("Dropped card", cardId, "to column", toColumnId);
+
+    // später: API call + reorder
+  });
+}
+
+function getDragAfterElement(container, y) {
+
+  // Get all cards except the one currently being dragged
+  const els = [...container.querySelectorAll(".kanban-card:not(.dragging)")];
+
+  // Find the card that the mouse is currently above
+  return els.reduce((closest, child) => {
+
+    // Get the position and size of the card
+    const box = child.getBoundingClientRect();
+
+    // Calculate how far the mouse is from the vertical center of the card
+    const offset = y - box.top - box.height / 2;
+
+    // If the mouse is above the center and closer than previous matches,
+    // this becomes the new closest element
+    if (offset < 0 && offset > closest.offset) {
+      return { offset, element: child };
+    }
+
+    return closest;
+
+  }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 function makedeleteButton(deleteBtn, column_Id, column) {
 

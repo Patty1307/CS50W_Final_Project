@@ -118,23 +118,21 @@ html, body {
   transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
 }
 
-.kanban-new-column-input::placeholder {
+.kanban-new-column-input::placeholder, .kanban-new-card-input::placeholder {
   color: var(--secondary-text-clr);
   opacity: 1;
 }
 
 
-.kanban-new-column-input:hover, .kanban-head-input:hover {
+.kanban-new-column-input:hover, .kanban-head-input:hover, .kanban-new-card-input:hover {
   background-color: #1b1d2a; 
 }
 
 
-.kanban-new-column-input:focus, .kanban-head-input:focus {
+.kanban-new-column-input:focus, .kanban-head-input:focus, .kanban-new-card-input:focus {
   border-color: var(--accent-clr);
   box-shadow: 0 0 0 3px rgba(94, 99, 255, 0.20);
 }
-
-
 
 
 /*  Trash icon */
@@ -155,3 +153,28 @@ html, body {
     }
 }
 
+
+/* Input for new cards*/
+.kanban-new-card-input {
+  width: 90%;
+  height: 34px;
+  padding: 0 0.75em;
+  align-self: center;
+  margin-top: 10px;
+
+  border-radius: .5em;               
+  border: 1px solid var(--line-clr); 
+
+  background-color: var(--hover-clr); 
+  color: var(--text-clr);
+
+  font-size: 0.95rem;
+  outline: none;
+
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+
+/* Dragging */
+.kanban-card.dragging { opacity: .6; }
+.kanban-card-wrapper { min-height: 40px; } 
