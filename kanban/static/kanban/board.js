@@ -1,4 +1,5 @@
 let draggedCardEl = null;
+let dragFromWrapper = null;
 
 // Function for creating a new board
 async function createBoard(name) {
@@ -373,46 +374,120 @@ function renderCard(cardData) {
 }
 
 function wireCardDrag(cardEl) {
+
+  // Attach dragstart handler to a single card element
   cardEl.addEventListener("dragstart", (e) => {
-    draggedCardEl = cardEl;
+
+    // Remember the wrapper (column container) the card was dragged from
+    dragFromWrapper = cardEl.closest(".kanban-card-wrapper");
+
+    // Add CSS class so the UI can style the currently dragged card
     cardEl.classList.add("dragging");
+
+    // Tell the browser this drag operation represents moving an element
     e.dataTransfer.effectAllowed = "move";
+
+    // Store the card id in the drag payload so it can be read on drop
     e.dataTransfer.setData("text/plain", cardEl.dataset.cardId);
   });
 
+  // When dragging stops (drop OR cancel)
   cardEl.addEventListener("dragend", () => {
+
+    // Remove dragging style from the card
     cardEl.classList.remove("dragging");
-    draggedCardEl = null;
+
+    // Clear stored origin wrapper reference
+    dragFromWrapper = null;
   });
 }
 
 
-// Function to make the wrappe to a dropzone
+// Function to make the wrapper a dropzone
 function wireDropzone(wrapperEl) {
+
+  // Fired continuously while a draggable element is over the wrapper
   wrapperEl.addEventListener("dragover", (e) => {
-    e.preventDefault(); 
-    // Which card is currently dragged? Controlled  by the css class kanban-card.dragging
+
+    // Required so dropping is allowed in this element
+    e.preventDefault();
+
+    // Find the card currently being dragged
     const dragging = document.querySelector(".kanban-card.dragging");
+
+    // If nothing is dragged, do nothing
     if (!dragging) return;
 
-    // Where i am hovering with the mouse an place it before the currently hovering element.
-    // When no hovering over a card then place it to the end of the lis
+    // Determine which element the dragged card should be inserted before
+    // based on the mouse Y position
     const afterEl = getDragAfterElement(wrapperEl, e.clientY);
+
+    // If no element found → append at end
     if (afterEl == null) wrapperEl.appendChild(dragging);
+
+    // Otherwise insert before the detected element
     else wrapperEl.insertBefore(dragging, afterEl);
   });
 
-  wrapperEl.addEventListener("drop", (e) => {
+
+  // Fired once when the card is dropped into this wrapper
+  wrapperEl.addEventListener("drop", async (e) => {
+
+    // Prevent browser default handling
     e.preventDefault();
+
+    // Read the dragged card id from the drag payload
     const cardId = Number(e.dataTransfer.getData("text/plain"));
+
+    // Target column id (the wrapper we dropped into)
     const toColumnId = Number(wrapperEl.dataset.columnId);
 
-    console.log("Dropped card", cardId, "to column", toColumnId);
+    // Source column id
+    // Comes from dragstart (because the DOM may already be rearranged during dragover)
+    const fromColumnId = dragFromWrapper
+      ? Number(dragFromWrapper.dataset.columnId)
+      : toColumnId;
 
-    // später: API call + reorder
+    // Build the new card order inside the target column
+    // Read all card ids in their current DOM order
+    const toOrderedIds = Array.from(wrapperEl.querySelectorAll(".kanban-card"))
+      .map(el => Number(el.dataset.cardId));
+
+    // Build the remaining order inside the source column
+    // Only needed if the card moved between different columns
+    const fromOrderedIds = (dragFromWrapper && dragFromWrapper !== wrapperEl)
+      ? Array.from(dragFromWrapper.querySelectorAll(".kanban-card"))
+          .map(el => Number(el.dataset.cardId))
+      : [];
+
+    try {
+
+      // Call backend API to persist the move + new ordering
+      const data = await api(`/cards/${cardId}/move`, {
+        method: "PUT",
+        body: {
+          from_column_id: fromColumnId,
+          to_column_id: toColumnId,
+
+          // Only send source ordering if the column actually changed
+          from_ordered_card_ids: fromColumnId === toColumnId ? [] : fromOrderedIds,
+
+          // Always send the final order of the target column
+          to_ordered_card_ids: toOrderedIds
+        }
+      });
+
+    
+      console.log("Move task API response", data);
+
+    } catch (err) {
+
+     
+      console.error("Moving task failed:", err.message);
+
+    }
   });
 }
-
 function getDragAfterElement(container, y) {
 
   // Get all cards except the one currently being dragged

@@ -17,4 +17,5 @@ urlpatterns = [
     path("board/column/delete/<int:column_id>", views.delete_column, name="delete_column"),
     path("board/delete/<int:board_id>", views.delete_board, name="delete_board"),
     path("board/create/task/<int:column_id>", views.create_task, name="create_task"),
+    path("cards/<int:card_id>/move", views.move_card, name="move_card"),
 ]

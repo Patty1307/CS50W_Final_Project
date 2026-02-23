@@ -254,3 +254,60 @@ def create_task(request, column_id):
         "success": True,
         "card": card.serialize()
     }, status=201)
+
+
+@csrf_protect
+@require_http_methods(["PUT"])
+@login_required
+def move_card(request, card_id):
+
+    # Parse JSON
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    # Validate payload
+    try:
+        from_col_id = int(data["from_column_id"])
+        to_col_id = int(data["to_column_id"])
+        from_ids = [int(x) for x in data.get("from_ordered_card_ids", None)]
+        to_ids = [int(x) for x in data.get("to_ordered_card_ids", None)]
+    except (KeyError, TypeError, ValueError):
+        return JsonResponse({"error": "Invalid payload"}, status=400)
+
+    # Security: card + columns must belong to current user (through board owner)
+    card = get_object_or_404(Card, id=card_id, column__board__owner=request.user)
+    from_col = get_object_or_404(Column, id=from_col_id, board__owner=request.user)
+    to_col = get_object_or_404(Column, id=to_col_id, board__owner=request.user)
+
+    # Sanity: card must currently be in from_col
+    if card.column_id != from_col.id:
+        return JsonResponse({"error": "Card is not in from_column"}, status=400)
+
+    # Function to reorder the cards in the database like the are positioned in the front end
+    def normalize_positions(column, ordered_ids):
+        for idx, cid in enumerate(ordered_ids):
+            Card.objects.filter(id=cid, column=column).update(position=idx)
+
+    with transaction.atomic():
+        # Move card if necessary
+        if from_col.id != to_col.id:
+            card.column = to_col
+            card.save(update_fields=["column"])
+
+        # If same column reorder, use only to_ids (or from_ids—both should be identical)
+        if from_col.id == to_col.id:
+            if not to_ids:
+                return JsonResponse({"error": "to_ordered_card_ids required for same-column reorder"}, status=400)
+            normalize_positions(to_col, to_ids)
+        else:
+            # Moving between columns: normalize both sides
+            if from_col.id != to_col.id:
+                if from_ids is None or to_ids is None:
+                    return JsonResponse({"error": "from_ordered_card_ids and to_ordered_card_ids are required"}, status=400)
+
+            normalize_positions(from_col, from_ids)
+            normalize_positions(to_col, to_ids)
+
+    return JsonResponse({"success": True}, status=200)

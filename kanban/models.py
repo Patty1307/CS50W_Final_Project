@@ -34,7 +34,6 @@ class Column(models.Model):
         return self.name
 
 class Card(models.Model):
-    
     column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='cards')
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -43,11 +42,7 @@ class Card(models.Model):
     position = models.PositiveIntegerField(default=0)
 
     class Meta:
-        ordering = ['-position']
-        constraints = [
-            models.UniqueConstraint(fields=['column', 'position'], name='uniq_card_position_per_column'),
-        ]
-
+        ordering = ['position']
 
     def serialize(self):
         return {
