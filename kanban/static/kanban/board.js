@@ -1,6 +1,70 @@
 let draggedCardEl = null;
 let dragFromWrapper = null;
 
+
+const modal = document.getElementById('composeModal');
+
+modal.addEventListener('show.bs.modal', async function (event) {
+
+  const clickedElement = event.relatedTarget; 
+  const card = clickedElement.closest('.kanban-card');
+
+  const task_id = card.dataset.cardId
+  // API call (dein Django endpoint)
+  try{
+    const data = await api(`/task/get/${task_id}`, {
+        method: "GET",
+    });
+
+  console.log("Get task Api response:", data)
+  modal.querySelector('#modal_task_title').value = data.card.title;
+  modal.querySelector('#modal_task_description').value = data.card.description;
+  modal.querySelector('#modal_card_id').value = data.card.id;
+
+  }
+  catch (err) {
+    console.error("Error getting task data:", err.message);
+  }
+
+});
+
+// Save the Content of the Task with API Call
+document.querySelector('#compose-form').onsubmit = async (event) => {
+    
+    // Prevent normal submit
+    event.preventDefault();
+
+    try {
+
+      //Get the data from the form 
+       const title = document.querySelector('#modal_task_title').value;
+       const description = document.querySelector('#modal_task_description').value;
+       const task_id = document.querySelector('#modal_card_id').value;
+
+       const data = await api(`/task/update/${task_id}`, {
+       method: "PUT",
+       body: {
+          title: title,
+          description: description,
+        }
+        });
+
+        console.log("Save task API response:", data)
+
+        const card = document.querySelector(`[data-card-id="${task_id}"]`);
+        card.querySelector('.kanban-card-body').innerHTML = data.card.title
+
+        // Close the modal 
+        const modalElement = document.getElementById("composeModal");
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        modalInstance.hide();
+
+    } catch (err) {
+      console.error("Error getting task data:", err.message);
+    }
+}
+
+
 // Function for creating a new board
 async function createBoard(name) {
   try {
@@ -361,11 +425,25 @@ function renderCard(cardData) {
   card.dataset.cardId = cardData.id;
   card.dataset.columnId = cardData.column_id;
 
+  // Task title
   const body = document.createElement('div');
   body.className = "kanban-card-body card-title";
   body.textContent = cardData.title ?? "(no title)";
+  body.setAttribute("data-bs-toggle", "modal");
+  body.setAttribute("data-bs-target", "#composeModal");
+
+
+   // Delete button
+  const deletecardbtn = document.createElement('button')
+  deletecardbtn.innerHTML =  `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="m376-300 104-104 104 104 56-56-104-104 104-104-56-56-104 104-104-104-56 56 104 104-104 104 56 56Zm-96 180q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520Zm-400 0v520-520Z"/></svg>`
+  deletecardbtn.className = "icon-btn"
+
+  makedeleteCardButton(deletecardbtn, card, cardData.id)
 
   card.appendChild(body);
+  card.appendChild(deletecardbtn);
+
+ 
 
 
   wireCardDrag(card);
@@ -401,7 +479,6 @@ function wireCardDrag(cardEl) {
     dragFromWrapper = null;
   });
 }
-
 
 // Function to make the wrapper a dropzone
 function wireDropzone(wrapperEl) {
@@ -488,6 +565,7 @@ function wireDropzone(wrapperEl) {
     }
   });
 }
+
 function getDragAfterElement(container, y) {
 
   // Get all cards except the one currently being dragged
@@ -513,18 +591,6 @@ function getDragAfterElement(container, y) {
   }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 function makedeleteButton(deleteBtn, column_Id, column) {
 
     const api_delete_column = async () => {
@@ -538,7 +604,7 @@ function makedeleteButton(deleteBtn, column_Id, column) {
     column.remove();
 
     } catch(err){
-    console.error("Rename failed:", err.message);
+    console.error("Delete column failed:", err.message);
     }
     };
 
@@ -546,7 +612,32 @@ function makedeleteButton(deleteBtn, column_Id, column) {
 
  }
 
-// Generic helper for making API requests to the backend.
+
+function makedeleteCardButton(deletecardbtn, cardEl, card_id){
+      const api_delete_card = async () => {
+
+    try {
+    const data = await api(`/board/card/delete/${card_id}`, {
+        method: "DELETE",
+    });
+
+    console.log("Delete card API response", data)
+    cardEl.remove();
+
+    } catch(err){
+    console.error("Delete card failed:", err.message);
+    }
+    };
+
+  deletecardbtn.addEventListener("click", api_delete_card)
+
+ }
+
+
+
+
+
+ // Generic helper for making API requests to the backend.
 // Handles JSON conversion, CSRF token, and error handling in one place.
 async function api(url, { method = "GET", body } = {}) {
 

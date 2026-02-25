@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.db.models import Max
+from django import forms
 from django.http import JsonResponse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
@@ -13,12 +14,32 @@ from django.views.decorators.http import require_POST, require_GET, require_http
 
 from .models import User, Board, Column, Card
 
+class TaskForm(forms.ModelForm):
+    class Meta:
+        model = Card
+        fields = ["title","description"]
+        labls = {
+            "title" : "Title",
+            "description" : "Description"
+        }
+        widgets = {
+            "title": forms.Textarea(attrs={"class": "form-control", "rows": 1, "id": "modal_task_title"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 4, "id": "modal_task_description"})
+        }
+
+
 DEFAULT_COLUMNS = ["To do", "Doing", "Done"]
+
 
 
 @login_required(login_url='login')
 def index(request):
-    return render(request,"kanban/index.html")
+    
+    form = TaskForm
+    
+    return render(request,"kanban/index.html", {
+        "form" : form
+    })
 
 
 def login_view(request):
@@ -261,6 +282,7 @@ def create_task(request, column_id):
 @login_required
 def move_card(request, card_id):
 
+
     # Parse JSON
     try:
         data = json.loads(request.body)
@@ -311,3 +333,43 @@ def move_card(request, card_id):
             normalize_positions(to_col, to_ids)
 
     return JsonResponse({"success": True}, status=200)
+
+
+
+@csrf_protect
+@require_http_methods(["DELETE"])
+@login_required
+def delete_card(request, card_id):
+    card = get_object_or_404(Card, id=card_id,column__board__owner=request.user)
+    card.delete()
+    return JsonResponse({"success": True})
+
+
+@require_GET
+@login_required(login_url='login')
+def get_card(request, card_id):
+    
+    card = get_object_or_404(Card, id=card_id, column__board__owner=request.user)
+
+    return JsonResponse({"card": card.serialize()})
+    
+
+@csrf_protect
+@require_http_methods(["PUT"])
+@login_required
+def update_task(request, card_id):
+    
+    card = get_object_or_404(Card, id=card_id, column__board__owner=request.user)
+
+    # Try to parse the jsnon
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    
+    card.title = data.get("title", card.title)
+    card.description = data.get("description", card.description)
+
+    card.save()
+
+    return JsonResponse({"card": card.serialize()})
