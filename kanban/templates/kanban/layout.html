@@ -10,6 +10,7 @@
         <script src="{% static 'kanban/board.js' %}" defer></script>
         <script src="{% static 'kanban/menu.js' %}" defer></script>
         <meta name="csrf-token" content="{{ csrf_token }}">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
@@ -22,10 +23,10 @@
             </button>
         </li>
         <li class="active">
-            <a href="#">
+            <button class="nav-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z"/></svg>
                 <span>Home</span>
-            </a>
+            </button>
         </li>
         <li>
             <button onClick="toggleSubMenu(this)"  class="dropdown-btn">
@@ -34,9 +35,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z"/></svg>
             </button>
             <ul class="sub-menu">
-                <div>
-                    <input type="text" placeholder="New Boardname" id="new-board" class="mb-2 mt-2">
+                
+                    
                     <div id="Boardlist">
+                        <input type="text" placeholder="New Boardname" id="new-board" class="mb-2 mt-2">
                         {% for board in menu_boards %}   
                         <li>
                             <div class="board-list">
@@ -48,7 +50,7 @@
                         </li>
                         {% endfor %}
                     </div>
-                </div>
+                
             </ul>
         </li>
         <li>

@@ -8,7 +8,6 @@
 --secondary-text-clr: #b0b3c1;
 }
 
-
 html, body {
   height: 100%;
 }
@@ -186,3 +185,59 @@ html, body {
 /* Dragging */
 .kanban-card.dragging { opacity: .6; }
 .kanban-card-wrapper { min-height: 40px; } 
+
+/* =========================
+   Mobile Layout – Columns stacked
+   ========================= */
+@media (max-width: 768px) {
+
+
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--base-clr);
+  }
+
+  .kanban {
+    display: flex;
+    flex-direction: column;   /* WICHTIG */
+    gap: 20px;
+    padding: 15px;
+
+    height: auto;
+    min-height: 100dvh;
+
+    overflow-x: hidden;       /* kein seitliches Scrollen */
+  }
+
+  .kanban .kanban-column {
+    width: 100%;
+    max-width: 100%;
+    min-height: 200px;
+  }
+
+  .kanban .kanban-card-wrapper {
+    max-height: 60vh;         /* verhindert endloses Wachstum */
+    overflow-y: auto;
+  }
+
+  .kanban .kanban-new-column {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .kanban .kanban-head-input {
+    font-size: 18px;
+  }
+
+  .kanban-new-column-input,
+  .kanban-new-card-input {
+    height: 42px;
+    font-size: 1rem;
+  }
+
+  .icon-btn {
+    padding: 10px;
+  }
+}

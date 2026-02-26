@@ -99,7 +99,8 @@ async function createBoard(name) {
     div.appendChild(deletebtn)
 
     li.appendChild(div);
-    BoardList.prepend(li);
+    const inputNewBoard = document.getElementById('new-board')
+    inputNewBoard.after(li);
 
   } catch (err) {
     console.error("Error creating board:", err.message);
