@@ -270,6 +270,7 @@ body{
         position: fixed;
         top: unset;
         bottom: 0;
+        overflow-y: hidden;
 
         > ul{
             padding: 0;
@@ -316,30 +317,27 @@ body{
                 overflow-x: auto;
             }
 
-            > #Boardlist > input#new-board{
-            width: 140px;       /* hier kleiner machen */
-            
-            height: 40px;
-            margin-left: 1em;
-    
-            }
+ 
 
             li{
                 display: inline-flex;
             }
 
-            .board-list{
+            .board-list, #Boardlist > input#new-board{
                 box-sizing: border-box;
                 height: 40px;
                 width: auto;
                 justify-content: center;
                 border: 1px solid;
                 border-color: var(--line-clr);
-                margin-top: 5px;
-                margin-bottom: 5px;
+                margin: 5px;
                 align-items: center;
             }
         }
 
     }
+}
+
+.hide-child-view{
+    display: none !important;
 }

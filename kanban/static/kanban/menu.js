@@ -35,18 +35,21 @@ document.addEventListener("click", (e) => {
     return;   // verhindert openBoard
   }
   
-    const btn = e.target.closest(".openBoard-btn");
+  const btn = e.target.closest(".openBoard-btn");
   const navBtn = e.target.closest(".nav-btn");
 
-  // Wenn weder Board-Button noch Nav-Button: raus
+  // return when neither navbtn or boardbtn
   if (!btn && !navBtn) return;
 
-  // Der tatsächlich geklickte "relevante" Button
+  // get the clicked button
   const clicked = btn || navBtn;
 
-  // 1) active überall entfernen
+  // 1) remove active and display of all child views 
   document.querySelectorAll("#sidebar li.active")
     .forEach(li => li.classList.remove("active"));
+  
+  document.querySelectorAll(".child-view")
+    .forEach(div => div.classList.add("hide-child-view"))
 
   // 2) active auf das <li> des geklickten Buttons setzen
   const li = clicked.closest("li");
@@ -55,7 +58,16 @@ document.addEventListener("click", (e) => {
   // 3) Wenn es ein Board-Button war: Board laden
   if (btn) {
     const boardId = btn.dataset.boardId;
-    if (boardId) load_Board(boardId);  
+    if (boardId) {
+        load_Board(boardId)
+        document.querySelector(".canban-view").classList.remove("hide-child-view")
+    };  
+  }
+
+  if (navBtn) {
+    if (navBtn && navBtn.classList.contains("Home")){
+        document.querySelector(".home-view").classList.remove("hide-child-view")
+    }
   }
 
 });

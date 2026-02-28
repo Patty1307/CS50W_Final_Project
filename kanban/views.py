@@ -35,6 +35,7 @@ DEFAULT_COLUMNS = ["To do", "Doing", "Done"]
 @login_required(login_url='login')
 def index(request):
     
+    
     form = TaskForm
     
     return render(request,"kanban/index.html", {
