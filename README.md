@@ -117,15 +117,15 @@ The combination of dynamic column structures, persistent ordering logic, API-bas
 
 ## How to Run
 
-1. Clone the repository and navigate into the project directory.
+1. Ensure Python 3 is installed on your system.
 
-2. (Recommended) Create and activate a virtual environment.
+2. Clone the repository and navigate into the project directory (the folder containing `manage.py`).
 
-3. Ensure Python 3 is installed on your virtual environment.
+3. (Recommended) Create and activate a virtual environment.
 
-4. Install Django 5.2.3 on your virtual environment:
+4. Install dependencies:
 
-   pip install Django==5.2.3
+   pip install -r requirements.txt
 
 5. Apply database migrations:
 
