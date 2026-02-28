@@ -7,11 +7,7 @@ Unlike a static task tracker, this application supports dynamically generated bo
 
 ## Distinctiveness and Complexity
 
-This project is distinct from the other course projects because it is neither a social network nor an e-commerce platform.
-
-Unlike Project 4, there are no shared feeds, user interactions, or social relationships between users. All data is strictly isolated per authenticated user. Users do not interact with each other, and no shared content system exists.
-
-It also differs fundamentally from Project 2. The application does not revolve around listings, transactions, or marketplace logic. Instead, it focuses on hierarchical structural management of dynamic objects:
+This project is distinct from the other course projects because it is neither a social network nor an e-commerce platform. Instead, it focuses on hierarchical structural management of dynamic objects with Kanban Boards and Cards:
 
 User → Boards → Columns → Cards
 
