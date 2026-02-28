@@ -51,11 +51,11 @@ document.addEventListener("click", (e) => {
   document.querySelectorAll(".child-view")
     .forEach(div => div.classList.add("hide-child-view"))
 
-  // 2) active auf das <li> des geklickten Buttons setzen
+  // 2) set active to <li> 
   const li = clicked.closest("li");
   if (li) li.classList.add("active");
 
-  // 3) Wenn es ein Board-Button war: Board laden
+  // 3) if board-button: Board laden  ......... notice... this could be named better then btn.... nobody is perfect
   if (btn) {
     const boardId = btn.dataset.boardId;
     if (boardId) {
